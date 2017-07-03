@@ -22,25 +22,19 @@ class BowlingGameSpecification extends Specification {
         game.score == turns * pins
 
         where:
-        pins  << [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+        pins  << [0, 1, 2, 3, 4]
     }
 
     def "should calculate a spare"() {
        given: "the bowler gets a spare in the first frame"
-       game.roll(6)
-       game.roll(4)
+       game.roll(5)
+       game.roll(5)
 
        when:  "the bower rolls his or her first ball"
        game.roll(3)
 
        then:  "add the number of pins hit to the first frame along with including the score"
-       game.score ==
-            g.roll(5);
-            g.roll(5); // spare
-            g.roll(3);
-            rollMany(17,0);
-            assertEquals(16,g.score());
-        }
+       game.score == 16
     }
 
 
