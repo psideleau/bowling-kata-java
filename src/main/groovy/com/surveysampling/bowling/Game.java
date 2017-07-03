@@ -1,6 +1,7 @@
 package com.surveysampling.bowling;
 
 import java.util.*;
+import java.util.stream.*;
 
 /**
  * Created by SSI.
@@ -11,7 +12,7 @@ public class Game {
     private static final int NUMBER_OF_FRAMES = 10;
     public static final int NOT_ROLLED = -1;
     private int currentFrame = 0;
-    private List<Frame> frames = new ArrayList<>(NUMBER_OF_FRAMES);
+    private List<Frame> frames = new ArrayList<>(NUMBER_OF_FRAMES + BONUS_FRAME);
 
     public Game() {
         for (int frame = 0; frame < NUMBER_OF_FRAMES + BONUS_FRAME; frame++) {
@@ -35,25 +36,34 @@ public class Game {
     }
 
     public int getScore() {
-        int totalScore = 0;
+        return IntStream.range(0, NUMBER_OF_FRAMES)
+              .map(this::calculateScoreForFrame)
+              .sum();
+    }
 
-        for (int frameIdx = 0; frameIdx < NUMBER_OF_FRAMES; frameIdx++) {
-            Frame frame = frames.get(frameIdx);
-            Frame nextFrame = frames.get(frameIdx + 1);
+    private int calculateScoreForFrame(int i) {
+        Frame frame = frames.get(i);
+        Frame nextFrame = frames.get(i + 1);
 
-            if (frame.isStrike()) {
-                totalScore += TOTAL_PINS + nextFrame.getRoll1();
-                totalScore += (nextFrame.isStrike()) ? frames.get(frameIdx + 2).getRoll1() : nextFrame.getRoll2();
-            }
-            else if (frame.isSpare()) {
-                totalScore += TOTAL_PINS + nextFrame.getRoll1();
-            }
-            else {
-                totalScore += frame.getScore();
-            }
+        if (frame.isStrike()) {
+            return getPinsFromFirstRollAfterAStrike(i) + getPinsFromSecondRollAfterAStrike(i);
         }
+        else if (frame.isSpare()) {
+            return TOTAL_PINS + nextFrame.getRoll1();
+        }
+        else {
+            return frame.getScore();
+        }
+    }
 
-        return totalScore;
+    private int getPinsFromFirstRollAfterAStrike(int currentFrameIdx) {
+        Frame nextFrame = frames.get(currentFrameIdx + 1);
+        return TOTAL_PINS + nextFrame.getRoll1();
+    }
+
+    private int getPinsFromSecondRollAfterAStrike(int currentFrameIdx) {
+        Frame nextFrame = frames.get(currentFrameIdx + 1);
+        return (nextFrame.isStrike()) ? frames.get(currentFrameIdx + 2).getRoll1() : nextFrame.getRoll2();
     }
 
 
