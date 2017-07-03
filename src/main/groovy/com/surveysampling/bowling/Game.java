@@ -32,4 +32,10 @@ public class Game {
     private boolean isSpare(int i) {
         return rolls[i] + rolls[i + 1] == 10;
     }
+
+    private static class Frame {
+        int roll1;
+        int roll2;
+        
+    }
 }

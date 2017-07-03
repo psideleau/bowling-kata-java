@@ -37,6 +37,20 @@ class BowlingGameSpecification extends Specification {
        game.score == 16
     }
 
+    def "should have an extra turn if bowler gets spare in last frame"() {
+        given: "the bowler knocks down 1 pin on each turn"
+        bowler.turns(19).hitPins(1).rollBall()
+
+        and: "on the last turn in the 10 frame rolls a spare"
+        bowler.turns(1).hitPins(9).rollBall()
+
+        when: "bowler rules again"
+        bowler.turns(1).hitPins(9).rollBall()
+
+        then: "last roll is added to final frame"
+        game.score == 37
+    }
+
 
     def class Bowler {
         int roll
