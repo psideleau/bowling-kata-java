@@ -21,17 +21,35 @@ public class Game {
     }
 
     public void roll(int pins) {
+        throwErrorIfInvalidNumberOfPins(pins);
         Frame frame = frames.get(currentFrame);
 
-        if (frame.roll1 == NOT_ROLLED) {
+        if (isBowlerFirstTurnInFrame(frame)) {
             frame.roll1 = pins;
-            if (pins == TOTAL_PINS) {
+            if (frame.isStrike()) {
                 currentFrame+=1;
             }
         }
         else  {
+            throwErrorIfTwoRollsInFrameExceedsLimit(pins, frame);
             frame.roll2 = pins;
             currentFrame+=1;
+        }
+    }
+
+    private boolean isBowlerFirstTurnInFrame(Frame frame) {
+        return frame.roll1 == NOT_ROLLED;
+    }
+
+    private void throwErrorIfTwoRollsInFrameExceedsLimit(int pins, Frame frame) {
+        if (frame.roll1 + pins > TOTAL_PINS) {
+            throw new IllegalArgumentException(String.format("Cannot knock down more than %d pins.", TOTAL_PINS));
+        }
+    }
+
+    private void throwErrorIfInvalidNumberOfPins(int pins) {
+        if (pins < 0 || pins > 10) {
+            throw new IllegalArgumentException(pins + " is an invalid roll. expecting 0-10");
         }
     }
 
@@ -67,7 +85,7 @@ public class Game {
     }
 
 
-    public static class Frame {
+    private static class Frame {
         private int roll1 = -1;
         private int roll2 = -1;
 

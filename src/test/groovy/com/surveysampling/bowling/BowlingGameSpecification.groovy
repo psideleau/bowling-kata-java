@@ -71,6 +71,48 @@ class BowlingGameSpecification extends Specification {
         game.score == 37
     }
 
+    @Unroll
+    def "should throw illegal argument exception when invalid pins: #pins"() {
+        when:
+        game.roll(pins)
+
+        then:
+        thrown(IllegalArgumentException)
+
+        where:
+        pins << [-1, 11, 100, Integer.MAX_VALUE]
+    }
+
+    @Unroll
+    def "should not be able knock down an invalid number of pins: #pins"() {
+        given:
+        bowler.turns(1).hitPins(4).rollBall()
+
+        when:
+        bowler.turns(1).hitPins(pins).rollBall()
+
+        then:
+        thrown(IllegalArgumentException)
+
+        where:
+        pins << [7, 8, 9, 10]
+    }
+
+    @Unroll
+    def "can knockdown 10 pins in a frame: #pins"() {
+        given:
+        bowler.turns(1).hitPins(4).rollBall()
+
+        when:
+        bowler.turns(1).hitPins(pins).rollBall()
+
+        then:
+        game.score == 4 + pins
+
+        where:
+        pins << [6, 5, 4, 3, 2, 1, 0]
+    }
+
 
     def class Bowler {
         int roll
