@@ -14,16 +14,23 @@ public class Game {
 
     public int getScore() {
         int totalScore = 0;
-        int i = 0;
+        int frameIndex = 0;
 
-        for (int frameIndex = 0; frameIndex < NUMBER_OF_FRAMES; frameIndex++) {
-            if (isSpare(i)) {
-                totalScore += 10 + rolls[i + 2];
+        for (int frame = 0; frame < NUMBER_OF_FRAMES; frame++) {
+            if (rolls[frameIndex] == 10) {
+                totalScore += 10 + rolls[frameIndex + 1] +  rolls[frameIndex + 2];
+                frameIndex++;
+            }
+            else if (isSpare(frameIndex)) {
+                totalScore += 10 + rolls[frameIndex + 2];
+                frameIndex+= 2;
             }
             else {
-                totalScore += rolls[i] + rolls[i + 1];
+                totalScore += rolls[frameIndex] + rolls[frameIndex + 1];
+                frameIndex+= 2;
             }
-            i+= 2;
+
+
         }
 
         return totalScore;
@@ -31,11 +38,5 @@ public class Game {
 
     private boolean isSpare(int i) {
         return rolls[i] + rolls[i + 1] == 10;
-    }
-
-    private static class Frame {
-        int roll1;
-        int roll2;
-        
     }
 }

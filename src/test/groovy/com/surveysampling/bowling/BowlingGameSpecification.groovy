@@ -37,6 +37,26 @@ class BowlingGameSpecification extends Specification {
        game.score == 16
     }
 
+    def "should calculate a strike"() {
+        given:
+        bowler.turns(1).hitPins(10).rollBall()
+
+        when:
+        bowler.turns(1).hitPins(3).rollBall()
+        bowler.turns(1).hitPins(4).rollBall()
+
+        then:
+        game.score == 24
+    }
+
+    def "should calculate a perfect game"() {
+        when:
+        bowler.turns(12).hitPins(10).rollBall()
+
+        then:
+        game.score == 300
+    }
+
     def "should have an extra turn if bowler gets spare in last frame"() {
         given: "the bowler knocks down 1 pin on each turn"
         bowler.turns(19).hitPins(1).rollBall()
