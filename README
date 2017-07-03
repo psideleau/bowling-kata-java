@@ -1,0 +1,127 @@
+gradle init --type groovy-application
+./gradlew -i -t
+
+test gutter bowls
+test all ones
+
+
+
+Step 2 before refactor
+class BowlingGameSpecification extends Specification {
+
+    def "should score a game of gutter balls"() {
+        given:
+        Game game = new Game()
+
+        when:
+        20.times {
+            game.roll(0)
+        }
+
+        then:
+        game.score == 0
+    }
+
+    def "should score a game of ones"() {
+        given:
+        Game game = new Game()
+
+        when:
+        20.times {
+            game.roll(1)
+        }
+
+        then:
+        game.score == 20
+    }
+
+
+}
+
+Step 3
+package com.surveysampling.bowling
+
+import spock.genesis.Gen
+import spock.lang.*
+
+/**
+ * Created by SSI.
+ */
+class BowlingGameSpecification extends Specification {
+    @Subject
+    Game game = new Game()
+
+    @Unroll
+    def "should sum score that has no spares or strikes"() {
+        when:
+        20.times {
+            this.game.roll(pins)
+        }
+
+        then:
+        this.game.score == expectedScore
+
+        where:
+        pins   || expectedScore
+        0      || 0
+        1      || 20
+    }
+
+    @Unroll
+    def "should sum score using property based testing for #pins"() {
+        when:
+        20.times {
+            game.roll(pins)
+        }
+
+        then:
+        game.score == 20 * pins
+
+        where:
+        pins   << Gen.integer(0, 9).take(20).and([0])
+    }
+
+}
+
+Step 4
+ @Subject
+    Game game = new Game()
+    Bowler bowler = new Bowler()
+
+    @Unroll
+    def "should sum score using property based testing for #pins"() {
+        given: "let bower take number of turns"
+        int turns = 20
+        bowler.turns(turns).hitPins(pins)
+
+        when:
+        bowler.rollBall()
+
+        then:
+        game.score == turns * pins
+
+        where:
+        pins   << Gen.integer(0, 9).take(20).and([0])
+    }
+
+
+    def class Bowler {
+        int roll
+        int pins
+
+        def turns(int times) {
+            roll = times
+            return this
+        }
+
+        def hitPins(int pins) {
+            this.pins = pins
+            return this
+        }
+
+        void rollBall() {
+            roll.times {
+                game.roll(pins)
+            }
+        }
+    }
