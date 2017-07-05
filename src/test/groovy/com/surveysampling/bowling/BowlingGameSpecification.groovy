@@ -37,6 +37,25 @@ class BowlingGameSpecification extends Specification {
        game.score == 16
     }
 
+    def "should get the score of a frame"() {
+        given:
+        bowler.turns(3).hitPins(10).rollBall()
+
+        when:
+        int frameScore = game.getFrameScore(0)
+
+        then:
+        frameScore == 30
+    }
+
+    def "should return zero if frame has not been started yet"() {
+        when:
+        int frameScore = game.getFrameScore(0)
+
+        then:
+        frameScore == 0
+    }
+
     def "should calculate a strike"() {
         given:
         bowler.turns(1).hitPins(10).rollBall()

@@ -20,6 +20,10 @@ public class Game {
         }
     }
 
+    public int getFrameScore(int frame) {
+        return calculateScoreForFrame(frame);
+    }
+
     public void roll(int pins) {
         throwErrorIfInvalidNumberOfPins(pins);
         Frame frame = frames.get(currentFrame);
