@@ -1,0 +1,58 @@
+.App {
+  text-align: center;
+}
+
+.App-logo {
+  animation: App-logo-spin infinite 20s linear;
+  height: 80px;
+}
+
+.App-header {
+  background-color: #222;
+  height: 150px;
+  padding: 20px;
+  color: white;
+}
+
+.App-intro {
+  font-size: large;
+}
+
+.frame {
+  border: 5px solid black;
+  padding: 0px;
+  width: 75px;
+  height: 50px;
+  float: left;
+}
+
+.frameSeperator {
+  clear:both;
+}
+
+.frameScore {
+  clear: left;
+  text-align: center;
+  font-size: 20px;
+  clear: both;
+}
+
+.roll1, .roll2 {
+  border: 1px solid #4f45ff;
+  margin: 0px;
+  padding-left: 5px;
+  font-size: 15px;
+  width: 30px;
+}
+
+.progress {
+  float:right;
+  text-align: right;
+  margin: 0px;
+  padding: 0px;
+}
+
+@keyframes App-logo-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
