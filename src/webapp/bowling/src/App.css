@@ -30,6 +30,13 @@
   clear:both;
 }
 
+#driver {
+  clear: both;
+  float:left;
+  width: 200px;
+  padding: 10px;
+}
+
 .frameScore {
   clear: left;
   text-align: center;

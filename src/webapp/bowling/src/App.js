@@ -1,20 +1,44 @@
 import React, { Component } from 'react';
 import logo from './logo.svg';
 import './App.css';
-import Frame from './Frame.js'
+import Game from "./Game.js";
 
 class App extends Component {
-  render() {
-      var frames1 = [];
-      for (var i = 0; i < 10; i++) {
-          frames1.push(<Frame key={'x' + i} roll1="7" roll2="2" score="9" />);
-      }
+    constructor(props) {
+        super(props);
 
-      var frames2 = [];
-      for (var i = 0; i < 10; i++) {
-          frames2.push(<Frame key={'y' + i} roll1="6" roll2="/" score="15"  />);
-      }
+        const gameId = 1
+        const frames = []
+        for (var i = 0; i < 9; i++) {
+            frames.push({roll1: '5', roll2: '4', score:'9'});
+        }
+
+        frames.push({roll1: '_', roll2:'_', score:'_'});
+
+        this.gameGateway = {
+            rolled: false,
+            gameId: 0,
+            value: 0,
+            startGame: () => {return {gameId: '1234', frames: frames};},
+            rollPins: (gameId, value) => {
+                this.gameGateway.rolled = true;
+                this.gameGateway.value = value;
+                this.gameGateway.gameId = gameId;
+                const frames = []
+                for (var i = 0; i < 9; i++) {
+                    frames.push({roll1: '5', roll2: '4', score:'9'});
+                }
+
+                frames.push({roll1: value.toString(), roll2:'_', score:'_'});
+
+                return frames;
+            }
+        };
+    }
+
+  render() {
     return (
+
       <div className="App">
         <div className="App-header">
           <img src={logo} className="App-logo" alt="logo" />
@@ -23,11 +47,8 @@ class App extends Component {
         <p className="App-intro">
           To get started, edit <code>src/App.js</code> and save to reload.
         </p>
-      {frames1}
-      <div className="frameSeperator">test</div>
-      {frames2}
+        <Game gameGateway={this.gameGateway} />
       </div>
-
     );
   }
 }
