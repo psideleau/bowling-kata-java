@@ -21,6 +21,16 @@ public class BowlingHandler {
         return executeAysnc(bowlingService::startGame);
     }
 
+    public Mono<ServerResponse> allowCrossOrigin(ServerRequest request) {
+        System.out.println("IN ALLOW CROSS ORIGIN");
+        return ServerResponse
+                .status(HttpStatus.NO_CONTENT)
+                .header("Access-Control-Allow-Origin", "*")
+                .header("Access-Control-Allow-Methods", "GET, PUT, POST, DELETE, OPTIONS")
+                .header("Access-Control-Allow-Headers", "*")
+                .build();
+    }
+
     private Mono<ServerResponse> executeAysnc(Callable<GameResponse> businessLogic) {
         return Mono
                 .fromCallable(businessLogic)
@@ -33,6 +43,7 @@ public class BowlingHandler {
     }
 
     public Mono<ServerResponse> rollPins(ServerRequest request) {
+
         return executeAysnc(() -> rollPinsInBackgroundThread(request));
     }
 

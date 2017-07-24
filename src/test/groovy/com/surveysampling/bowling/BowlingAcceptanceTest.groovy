@@ -37,7 +37,7 @@ public class BowlingAcceptanceTest extends Specification {
         List firstRolls = path.get("frames.roll1")
         List secondRolls = path.get("frames.roll2")
         List scores = path.get('frames.score')
-
+        
         assert firstRolls.every { it == -1 }
         assert secondRolls.every { it == -1 }
         assert scores.every { it == -1 }

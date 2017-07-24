@@ -23,10 +23,11 @@ class Game extends Component {
     }
 
     handleSubmit(event) {
+        event.preventDefault();
+
         this.gameGateway.rollPins(this.state.gameId, this.pins, (updatedGame) => {
             console.log("updated game is", updatedGame);
             this.setState(updatedGame);
-            event.preventDefault();
         });
     }
 

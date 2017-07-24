@@ -36,4 +36,6 @@ public class ApplicationConfiguration {
                     route(method(HttpMethod.PUT), bowlingHandler::start)
                     .andRoute(POST("/{gameId}"), bowlingHandler::rollPins));
     }
+
+
 }
