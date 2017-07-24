@@ -13,19 +13,21 @@ class Game extends Component {
     }
 
     componentDidMount() {
-        const response = this.gameGateway.startGame();
-        this.setState({frames: response.frames, gameId: response.gameId});
+        this.gameGateway.startGame((response) => {
+            this.setState(response);
+        });
     }
 
     handleChange(event) {
-        this.pins = event.target.value;
+        this.pins = parseInt(event.target.value, 10);
     }
 
     handleSubmit(event) {
-        const updatedGame = this.gameGateway.rollPins(this.state.gameId, this.pins);
-        console.log("updated game is", updatedGame);
-        this.setState({frames: updatedGame, gameId: this.state.gameId});
-        event.preventDefault();
+        this.gameGateway.rollPins(this.state.gameId, this.pins, (updatedGame) => {
+            console.log("updated game is", updatedGame);
+            this.setState(updatedGame);
+            event.preventDefault();
+        });
     }
 
     render() {

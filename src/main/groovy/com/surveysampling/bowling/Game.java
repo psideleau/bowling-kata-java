@@ -1,48 +1,71 @@
 package com.surveysampling.bowling;
 
+import lombok.*;
+
 import java.util.*;
+import java.util.function.*;
 import java.util.stream.*;
 
 /**
  * Created by SSI.
  */
 public class Game {
-    private static final int BONUS_FRAME = 2;
+    private static final int BONUS_FRAMES = 2;
     private static final int TOTAL_PINS = 10;
-    private static final int NUMBER_OF_FRAMES = 10;
-    public static final int NOT_ROLLED = -1;
-    private int currentFrame = 0;
-    private List<Frame> frames = new ArrayList<>(NUMBER_OF_FRAMES + BONUS_FRAME);
+    public static final int NUMBER_OF_FRAMES = 10;
+    public static final int FRAMES_PLUS_BONUS_FRAMES = NUMBER_OF_FRAMES + BONUS_FRAMES;
+    public static final int CANNOT_SCORE_YET = -1;
 
-    public Game() {
-        for (int frame = 0; frame < NUMBER_OF_FRAMES + BONUS_FRAME; frame++) {
+    private final List<Frame> frames = new ArrayList<>(NUMBER_OF_FRAMES + BONUS_FRAMES);
+    private final String gameId;
+
+    public Game(String gameId) {
+        this.gameId = gameId;
+        for (int frame = 0; frame < NUMBER_OF_FRAMES + BONUS_FRAMES; frame++) {
             frames.add(new Frame());
         }
     }
 
-    public int getFrameScore(int frame) {
-        return calculateScoreForFrame(frame);
+    String getGameId() {
+        return gameId;
+    }
+
+    public int getRunningScore(int frameIdx) {
+        return getRunningScoresUpToInclusive(frameIdx).runningScore;
+    }
+
+    private Game.RunningScoreSum getRunningScoresUpToInclusive(int frameIdx) {
+        return getRunningScore(Game.RunningScoreSum.builder()
+                .runningScore(0)
+                .currentFrameIdx(0)
+                .desiredFrameIdx(frameIdx)
+                .scoreSumList(new ArrayList<>())
+                .build());
     }
 
     public void roll(int pins) {
         throwErrorIfInvalidNumberOfPins(pins);
-        Frame frame = frames.get(currentFrame);
+        Frame frame = getCurrentFrame();
 
-        if (isBowlerFirstTurnInFrame(frame)) {
+        if (hasBowlerNotStartedFrame(frame)) {
             frame.roll1 = pins;
-            if (frame.isStrike()) {
-                currentFrame+=1;
-            }
         }
         else  {
             throwErrorIfTwoRollsInFrameExceedsLimit(pins, frame);
             frame.roll2 = pins;
-            currentFrame+=1;
         }
     }
 
-    private boolean isBowlerFirstTurnInFrame(Frame frame) {
-        return frame.roll1 == NOT_ROLLED;
+    private Frame getCurrentFrame() {
+        return frames.stream()
+                .filter(frame -> hasBowlerNotStartedFrame(frame)
+                                 || (!this.isStrike(frame) && frame.roll2 == CANNOT_SCORE_YET))
+                .findFirst()
+                .orElseThrow(IllegalStateException::new);
+    }
+
+    private boolean hasBowlerNotStartedFrame(Frame frame) {
+        return frame.roll1 == CANNOT_SCORE_YET;
     }
 
     private void throwErrorIfTwoRollsInFrameExceedsLimit(int pins, Frame frame) {
@@ -58,60 +81,95 @@ public class Game {
     }
 
     public int getScore() {
-        return IntStream.range(0, NUMBER_OF_FRAMES)
-              .map(this::calculateScoreForFrame)
-              .sum();
+        return getRunningScore(NUMBER_OF_FRAMES -1);
     }
 
-    private int calculateScoreForFrame(int i) {
-        Frame frame = frames.get(i);
-        Frame nextFrame = frames.get(i + 1);
+    public List<Integer> getRunningScorePerFramePlayed() {
+        List<Integer> scoreSumList = getRunningScoresUpToInclusive(NUMBER_OF_FRAMES - 1).scoreSumList;
 
-        if (frame.isStrike()) {
-            return getPinsFromFirstRollAfterAStrike(i) + getPinsFromSecondRollAfterAStrike(i);
+        for (int i = scoreSumList.size(); i < FRAMES_PLUS_BONUS_FRAMES; i++) {
+            scoreSumList.add(CANNOT_SCORE_YET);
         }
-        else if (frame.isSpare()) {
-            return TOTAL_PINS + nextFrame.getRoll1();
+
+        return scoreSumList;
+    }
+
+    public <T> List<T> mapFrames(Function<Frame, T> mapper) {
+        return this.frames.stream().map(mapper).collect(Collectors.toList());
+    }
+
+    private RunningScoreSum getRunningScore(RunningScoreSum runningScore) {
+        if (runningScore.currentFrameIdx > runningScore.desiredFrameIdx ||
+            hasBowlerNotStartedFrame(frames.get(runningScore.currentFrameIdx))) {
+            return runningScore;
+        }
+
+        int newRunningScore = runningScore.runningScore + getRawScoreForFrame(runningScore.currentFrameIdx);
+        runningScore.scoreSumList.add(newRunningScore);
+        int nextFrame = runningScore.currentFrameIdx + 1;
+
+        return getRunningScore(RunningScoreSum.builder().runningScore(newRunningScore)
+                .currentFrameIdx(nextFrame)
+                .desiredFrameIdx(runningScore.desiredFrameIdx)
+                .runningScore(newRunningScore)
+                .scoreSumList(runningScore.scoreSumList)
+                .build());
+    }
+
+    private int getRawScoreForFrame(int currentFrameIdx) {
+        Frame frame = frames.get(currentFrameIdx);
+        Frame nextFrame = frames.get(currentFrameIdx + 1);
+
+        if (isStrike(frame)) {
+            return TOTAL_PINS +
+                    getPinsFromFirstRollAfterAStrike(currentFrameIdx) +
+                    getPinsFromSecondRollAfterAStrike(currentFrameIdx);
+        }
+        else if (isSpare(frame)) {
+            return TOTAL_PINS + getPinsKnockedDown(nextFrame.roll1);
         }
         else {
-            return frame.getScore();
+            return getPinsKnockedDown(frame.roll1) + getPinsKnockedDown(frame.roll2);
         }
     }
 
     private int getPinsFromFirstRollAfterAStrike(int currentFrameIdx) {
         Frame nextFrame = frames.get(currentFrameIdx + 1);
-        return TOTAL_PINS + nextFrame.getRoll1();
+        return getPinsKnockedDown(nextFrame.roll1);
     }
 
     private int getPinsFromSecondRollAfterAStrike(int currentFrameIdx) {
         Frame nextFrame = frames.get(currentFrameIdx + 1);
-        return (nextFrame.isStrike()) ? frames.get(currentFrameIdx + 2).getRoll1() : nextFrame.getRoll2();
+        return (isStrike(nextFrame))
+                ? getPinsKnockedDown(frames.get(currentFrameIdx + 2).roll1)
+                : getPinsKnockedDown(nextFrame.roll2);
     }
 
-
-    private static class Frame {
-        private int roll1 = -1;
-        private int roll2 = -1;
-
-        boolean isStrike() {
-            return roll1 == TOTAL_PINS;
-        }
-
-        boolean isSpare() {
-            return (roll1 + roll2) == TOTAL_PINS;
-        }
-
-        int getScore() {
-            return  getRoll1() + getRoll2();
-        }
-
-        public int getRoll1() {
-            return roll1 == NOT_ROLLED ? 0 : roll1;
-        }
-
-        public int getRoll2() {
-            return roll2 == NOT_ROLLED ? 0 : roll2;
-        }
+    private int getPinsKnockedDown(int pinsKnockedDown) {
+        return pinsKnockedDown == CANNOT_SCORE_YET ? 0 : pinsKnockedDown;
     }
 
+    private boolean isStrike(Frame frame) {
+        return getPinsKnockedDown(frame.roll1) == TOTAL_PINS;
+    }
+
+    private boolean isSpare(Frame frame) {
+        return (getPinsKnockedDown(frame.roll1) +
+                getPinsKnockedDown(frame.roll2)) == TOTAL_PINS;
+    }
+
+    @Value
+    @Builder
+    private static class RunningScoreSum {
+        private final int desiredFrameIdx;
+        private final int currentFrameIdx;
+        private final int runningScore;
+        private final List<Integer> scoreSumList;
+    }
+
+    @Getter
+    public static class Frame {
+        private int roll1 = CANNOT_SCORE_YET;
+        private int roll2 = CANNOT_SCORE_YET;
+    }
 }

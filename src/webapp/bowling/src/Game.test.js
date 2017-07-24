@@ -9,19 +9,19 @@ import { shallow } from 'enzyme';
 
 describe('a 1 person bowling game', () => {
     const frames = [{roll1: 5, roll2: 4, score:9},
-        {roll1:4, roll2:4, score:8}, {roll1:'_', roll2:'_', score:'_'}];
+        {roll1:4, roll2:4, score:8}, {roll1:-1, roll2:-1, score:-1}];
 
     const gameGateway = {
         rolled: false,
         gameId: 0,
         value: 0,
-        startGame: () => {return {gameId: '1234', frames: frames};},
-        rollPins: (gameId, value) => {
+        startGame: (callback) => { return callback({gameId: '1234', frames: frames});},
+        rollPins: (gameId, value, callback) => {
             gameGateway.rolled = true;
             gameGateway.value = value;
             gameGateway.gameId = gameId;
-            return [{roll1: 5, roll2: 4, score:9},
-                {roll1:4, roll2:4, score:8}, {roll1:value.toString(), roll2:'_', score:'_'}];
+            return callback({gameId: '1234', frames:[{roll1: 5, roll2: 4, score:9},
+                {roll1:4, roll2:4, score:8}, {roll1:value, roll2:'_', score:'_'}]});
         }
     };
 
@@ -66,9 +66,9 @@ describe('a 1 person bowling game', () => {
         game.find('#roll').simulate('submit');
 
         const frameComponents = game.find(Frame);
-        expect(frameComponents.get(2).props.frame.roll1).toBe("6");
+        expect(frameComponents.get(2).props.frame.roll1).toBe(6);
         expect(gameGateway.rolled).toBe(true);
-        expect(gameGateway.value).toBe('6');
+        expect(gameGateway.value).toBe(6);
         expect(gameGateway.gameId).toBe('1234')
     });
 

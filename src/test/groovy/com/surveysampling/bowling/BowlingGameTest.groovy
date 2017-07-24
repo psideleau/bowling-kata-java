@@ -4,10 +4,10 @@ import spock.lang.*
 /**
  * Created by SSI.
  */
-class BowlingGameSpecification extends Specification {
+class BowlingGameTest extends Specification {
     @Subject
     Game game = new Game()
-    Bowler bowler = new Bowler()
+    Bowler bowler = new Bowler(game)
 
     @Unroll
     def "should sum score using property based testing for #pins"() {
@@ -42,18 +42,49 @@ class BowlingGameSpecification extends Specification {
         bowler.turns(3).hitPins(10).rollBall()
 
         when:
-        int frameScore = game.getFrameScore(0)
+        int frameScore = game.getRunningScore(0)
 
         then:
         frameScore == 30
     }
 
-    def "should return zero if frame has not been started yet"() {
+    def "should return scores of -1 if game not start yet"() {
         when:
-        int frameScore = game.getFrameScore(0)
+        List frameScores = game.getRunningScorePerFramePlayed()
 
         then:
-        frameScore == 0
+        frameScores.size() == 12
+        frameScores.every { it == -1}
+    }
+
+
+    def "should calculate running score through each frame"() {
+        given: " the bowler has 3 strikes in a row"
+        bowler.turns(3).hitPins(10).rollBall()
+
+        and: "then knocks down 3 and 4 pins in frame 4, respectively"
+        bowler.turns(1).hitPins(3).rollBall()
+        bowler.turns(1).hitPins(4).rollBall()
+
+        when:
+        List<Integer> runningScores = game.getRunningScorePerFramePlayed();
+
+        def frame1Score = runningScores[0]
+        def frame2Score = runningScores[1]
+        def frame3Score = runningScores[2]
+        def frame4Score = runningScores[3]
+
+        then: "frame 1 should be 10 pins knocked down in frame 1 + the 10 pins knocked down in second and third frames"
+        frame1Score == 10 + 10 + 10
+
+        and: "frame 2 score should include running total + 10 pins knocked down in frame 2  + strike in frame 3 and first roll in frame 4"
+        frame2Score == frame1Score + 10 + 10 + 3
+
+        and: "frame 3 score should include running total + 10 pinks knocked down in frame 3 + sum of next 2 rolls in frame 4"
+        frame3Score == frame2Score + 10 + 3 + 4
+
+        and: "frame 4 is running score + the seven picked knocked down in that frame"
+        frame4Score == frame3Score + 3 + 4
     }
 
     def "should calculate a strike"() {
@@ -80,7 +111,7 @@ class BowlingGameSpecification extends Specification {
         given: "the bowler knocks down 1 pin on each turn"
         bowler.turns(19).hitPins(1).rollBall()
 
-        and: "on the last turn in the 10 frame rolls a spare"
+        and: "on the last turn in the 10th frame rolls a spare"
         bowler.turns(1).hitPins(9).rollBall()
 
         when: "bowler rules again"
@@ -132,27 +163,6 @@ class BowlingGameSpecification extends Specification {
         pins << [6, 5, 4, 3, 2, 1, 0]
     }
 
-
-    def class Bowler {
-        int roll
-        int pins
-
-        def turns(int times) {
-            roll = times
-            return this
-        }
-
-        def hitPins(int pins) {
-            this.pins = pins
-            return this
-        }
-
-        void rollBall() {
-            roll.times {
-                game.roll(pins)
-            }
-        }
-    }
 
 
 }
