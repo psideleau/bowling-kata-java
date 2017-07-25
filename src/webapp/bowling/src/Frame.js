@@ -7,17 +7,21 @@ class Frame extends Component {
                     <span className="roll1">{this.formatRoll1()}</span>
                     <span className="roll2">{this.formatRoll2()}</span>
                 </div>
-                <div className="frameScore">{this.props.frame.score}</div>
+                <div className="frameScore">{this.formatNumber(this.props.frame.score)}</div>
             </div>
         );
     }
 
     formatRoll1() {
-        return this.props.frame.roll1 < 10 ? this.props.frame.roll1 : 'X';
+        return this.props.frame.roll1 < 10 ? this.formatNumber(this.props.frame.roll1) : 'X';
     }
 
     formatRoll2() {
-        return this.props.frame.roll1 + this.props.frame.roll2 === 10 ? '/' : this.props.frame.roll2;
+        return this.props.frame.roll1 + this.props.frame.roll2 === 10 ? '/' : this.formatNumber(this.props.frame.roll2);
+    }
+
+    formatNumber(number) {
+        return number === -1 ? "_" :number
     }
 }
 export default Frame;

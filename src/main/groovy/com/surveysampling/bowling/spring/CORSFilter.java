@@ -12,7 +12,6 @@ import reactor.core.publisher.*;
 public class CORSFilter implements WebFilter {
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
-        System.out.println("IN FILTER");
         ServerHttpResponse response = exchange.getResponse();
 
         response.getHeaders().add("Access-Control-Allow-Origin", "*");

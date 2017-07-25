@@ -36,6 +36,17 @@ describe('A Bowling frame', () => {
         expect(roll1.text()).toBe('X');
     });
 
+    it ('shows a _ for a -1', () => {
+        const frame = {roll1 : -1, roll2: -1, score: -1};
+        frameComponent = render(<Frame frame={frame}/>);
+        const roll1 = frameComponent.find('.roll1');
+        const roll2 = frameComponent.find('.roll2')
+        const score = frameComponent.find('.frameScore')
+        expect(roll1.text()).toBe('_');
+        expect(roll2.text()).toBe('_');
+        expect(score.text()).toBe('_');
+    });
+
     it('and the number of pins on the second roll', () => {
         const roll2 = frameComponent.find('.roll2');
         expect(roll2.text()).toBe('3');

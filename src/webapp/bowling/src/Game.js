@@ -38,11 +38,19 @@ class Game extends Component {
 
         return (
           <div>
-                {frameComponents}
+              <div id="lane">
+                  <h1>Lane1</h1>
+                  {this.state.finished &&
+                      <div id="game-over" className="alert alert-success">
+                          Thank you for playing
+                      </div>
+                  }
+                  {frameComponents}
+                </div>
                 <div id="driver">
                     <form onSubmit={this.handleSubmit}>
                         <input type="number" id="pins" onChange={this.handleChange} name="pins" min="0" max="10" />
-                        <button id="roll" type="submit">ROLL</button>
+                        <button className="btn btn-primary" id="roll" disabled={this.state.finished} type="submit">ROLL</button>
                     </form>
                 </div>
           </div>

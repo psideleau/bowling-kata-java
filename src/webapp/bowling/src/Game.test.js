@@ -15,12 +15,13 @@ describe('a 1 person bowling game', () => {
         rolled: false,
         gameId: 0,
         value: 0,
+        finished: false,
         startGame: (callback) => { return callback({gameId: '1234', frames: frames});},
         rollPins: (gameId, value, callback) => {
             gameGateway.rolled = true;
             gameGateway.value = value;
             gameGateway.gameId = gameId;
-            return callback({gameId: '1234', frames:[{roll1: 5, roll2: 4, score:9},
+            return callback({gameId: '1234', finished: gameGateway.finished, frames:[{roll1: 5, roll2: 4, score:9},
                 {roll1:4, roll2:4, score:8}, {roll1:value, roll2:'_', score:'_'}]});
         }
     };
@@ -53,7 +54,7 @@ describe('a 1 person bowling game', () => {
 
         const rollButton = game.find('#roll')
 
-        expect(rollButton.get(0)).toBeDefined()
+        expect(rollButton.get(0)).toBeDefined();
     });
 
     it('should update game after rolling', () => {
@@ -70,6 +71,23 @@ describe('a 1 person bowling game', () => {
         expect(gameGateway.rolled).toBe(true);
         expect(gameGateway.value).toBe(6);
         expect(gameGateway.gameId).toBe('1234')
+        const gameOver = game.find("#game-over").get(0);
+        expect(gameOver).toBeUndefined();
+        expect(game.find('#roll').props().disabled).toBe(false);
+    });
+
+    it('should display finished message if game over', () => {
+        gameGateway.finished = true;
+        const game = mount(<Game gameGateway={gameGateway}/>);
+
+        const pinsField = game.find('#pins').get(0);
+        game.find('#pins').simulate('change', {target: {value: '6'}});
+        game.find('#roll').simulate('submit');
+        expect(game.find('#roll').props().disabled).toBe(true);
+
+        const frameComponents = game.find(Frame);
+        const gameOver = game.find("#game-over").get(0);
+        expect(gameOver).toBeDefined();
     });
 
 });
