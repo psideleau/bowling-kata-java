@@ -30,6 +30,20 @@ public class Game {
         return gameId;
     }
 
+    public boolean isFinished() {
+        Frame lastFrame = frames.get(NUMBER_OF_FRAMES - 1);
+
+        if (isSpare(lastFrame)) {
+            return frames.get(NUMBER_OF_FRAMES).roll1 > CANNOT_SCORE_YET;
+        }
+        else if (isStrike(lastFrame)) {
+            return frames.get(NUMBER_OF_FRAMES + 1).roll1 > CANNOT_SCORE_YET;
+        }
+        else {
+            return lastFrame.roll2 > CANNOT_SCORE_YET;
+        }
+    }
+
     public int getRunningScore(int frameIdx) {
         return getRunningScoresUpToInclusive(frameIdx).runningScore;
     }
@@ -95,7 +109,14 @@ public class Game {
     }
 
     public <T> List<T> mapFrames(Function<Frame, T> mapper) {
-        return this.frames.stream().map(mapper).collect(Collectors.toList());
+        return excludeBonusFrames()
+                .stream()
+                .map(mapper)
+                .collect(Collectors.toList());
+    }
+
+    private List<Frame> excludeBonusFrames() {
+        return this.frames.subList(0, Game.NUMBER_OF_FRAMES);
     }
 
     private RunningScoreSum getRunningScore(RunningScoreSum runningScore) {
@@ -154,8 +175,9 @@ public class Game {
     }
 
     private boolean isSpare(Frame frame) {
-        return (getPinsKnockedDown(frame.roll1) +
-                getPinsKnockedDown(frame.roll2)) == TOTAL_PINS;
+        return (!isStrike(frame) &&
+                (getPinsKnockedDown(frame.roll1) +
+                getPinsKnockedDown(frame.roll2) == TOTAL_PINS));
     }
 
     @Value

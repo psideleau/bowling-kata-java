@@ -13,4 +13,5 @@ public class GameResponse {
     private final String gameId;
     private final List<FrameDTO> frames;
     private final int totalScore;
+    private final boolean finished;
 }

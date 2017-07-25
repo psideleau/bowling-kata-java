@@ -4,7 +4,7 @@ import spock.lang.*
 /**
  * Created by SSI.
  */
-class BowlingGameTest extends Specification {
+class GameTest extends Specification {
     @Subject
     Game game = new Game()
     Bowler bowler = new Bowler(game)
@@ -23,6 +23,85 @@ class BowlingGameTest extends Specification {
 
         where:
         pins  << [0, 1, 2, 3, 4]
+    }
+
+    def "should indicate that game is not finished in middle of game"() {
+        given:
+        bowler.turns(10).hitPins(5).rollBall()
+
+        when:
+        boolean finished = game.isFinished()
+
+        then:
+        finished == false
+    }
+
+    def "should indicate that game is not finished when last frame was a strike"() {
+        given:
+        bowler.turns(10).hitPins(10).rollBall()
+
+        when:
+        boolean finished = game.isFinished()
+
+        then:
+        finished == false
+    }
+
+    def "should indicate that game is not finished when last frame was a strike and hasn't finished second bonus roll"() {
+        given:
+        bowler.turns(11).hitPins(10).rollBall()
+
+        when:
+        boolean finished = game.isFinished()
+
+        then:
+        finished == false
+    }
+
+    def "should indicate that game is not finished when last frame was a spare and hasn't finished bonus roll"() {
+        given:
+        bowler.turns(19).hitPins(4).rollBall()
+        bowler.turns(1).hitPins(6).rollBall()
+
+        when:
+        boolean finished = game.isFinished()
+
+        then:
+        finished == false
+    }
+
+    def "should indicate that game is finished"() {
+        given:
+        bowler.turns(20).hitPins(4).rollBall()
+
+        when:
+        boolean finished = game.isFinished()
+
+        then:
+        finished == true
+    }
+
+    def "should indicate that game is finished on perfect game"() {
+        given:
+        bowler.turns(12).hitPins(10).rollBall()
+
+        when:
+        boolean finished = game.isFinished()
+
+        then:
+        finished == true
+    }
+
+    def "should indicate that game is finished after getting a spare and rolling bonus"() {
+        given:
+        bowler.turns(19).hitPins(4).rollBall()
+        bowler.turns(2).hitPins(6).rollBall()
+
+        when:
+        boolean finished = game.isFinished()
+
+        then:
+        finished == true
     }
 
     def "should calculate a spare"() {

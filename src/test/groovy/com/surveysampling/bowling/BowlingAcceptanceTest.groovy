@@ -28,16 +28,17 @@ public class BowlingAcceptanceTest extends Specification {
         then:
         path.getString("gameId") != null
         path.getInt("totalScore") == 0
+        path.getBoolean("finished") == false
 
         assertFramesHaveDefaultValues(path)
     }
 
     private void assertFramesHaveDefaultValues(JsonPath path) {
-        assert path.getList("frames").size() == Game.FRAMES_PLUS_BONUS_FRAMES
+        assert path.getList("frames").size() == Game.NUMBER_OF_FRAMES
         List firstRolls = path.get("frames.roll1")
         List secondRolls = path.get("frames.roll2")
         List scores = path.get('frames.score')
-        
+
         assert firstRolls.every { it == -1 }
         assert secondRolls.every { it == -1 }
         assert scores.every { it == -1 }
@@ -62,8 +63,9 @@ public class BowlingAcceptanceTest extends Specification {
 
         then:
         updateResponse.getString("gameId") != null
+        updateResponse.getBoolean("finished") == false
         updateResponse.getInt("totalScore") == pins
-        updateResponse.getList("frames").size() == Game.FRAMES_PLUS_BONUS_FRAMES
+        updateResponse.getList("frames").size() == Game.NUMBER_OF_FRAMES
         updateResponse.getInt("frames[0].roll1") == pins
     }
 

@@ -42,6 +42,7 @@ public class BowlingInteractor implements BowlingService {
                 .gameId(game.getGameId())
                 .totalScore(game.getScore())
                 .frames(toDTO(game))
+                .finished(game.isFinished())
                 .build();
     }
 }

@@ -27,20 +27,21 @@ class BowlingInteractorTest extends Specification {
 
         and:
         gameSpy.get() != null
-        response.frames.size() == gameSpy.get().frames.size()
+        response.frames.size() == Game.NUMBER_OF_FRAMES
         response.frames.every {it.roll1 == Game.CANNOT_SCORE_YET &&
                                it.roll2 == Game.CANNOT_SCORE_YET &&
                                it.score == Game.CANNOT_SCORE_YET}
 
         response.gameId == gameSpy.get().gameId
+        response.finished == false
         response.totalScore == 0
     }
 
-    def "should update pins"() {
+    def "should finish bowling game"() {
         given: "the bowler has gotten a perfect score"
         Game game = new Game(UUID.randomUUID().toString())
         Bowler bowler = new Bowler(game)
-        bowler.turns(10).hitPins(10).rollBall()
+        bowler.turns(11).hitPins(10).rollBall()
         def pinsToKnockDown = 7
 
         when: "bowler rolls bonus frame"
@@ -59,19 +60,20 @@ class BowlingInteractorTest extends Specification {
 
         assertValidResponse(response, game)
         assertThatResponseFramesMatchGameFrames(response, game)
+        response.finished == true
     }
 
     private void assertSaveGameAfterUpdatingScore(Game game, int pins) {
         1 * access.saveGame(game) >> {
             // make sure game is saved after updating it
-            assert game.frames[10].roll1 == pins
+            assert game.frames[11].roll1 == pins
         }
     }
 
     private void assertValidResponse(GameResponse response, Game game) {
         response.totalScore == game.score
         response.gameId == game.gameId
-        response.frames.size() == game.frames.size()
+        response.frames.size() == Game.NUMBER_OF_FRAMES
     }
 
     private void assertThatResponseFramesMatchGameFrames(GameResponse response, Game game) {

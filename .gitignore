@@ -2,3 +2,4 @@
 .idea
 bowling.iml
 src/webapp/bowling/node_modules/
+out/*
